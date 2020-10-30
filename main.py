@@ -109,18 +109,12 @@ class NeuralNetwork:
 
     def predict(self, x, threshold):
 
-        m = x.shape[1]
-        y_predicted = np.zeros((1, m))
-
         probablity = sigmoid(np.dot(self.w.T, x))
 
-        for i in range(probablity.shape[1]):
-            if probablity[0, i] >= 0.5:
-                y_predicted[:, i] = 1
-            else:
-                y_predicted[:, i] = 0
+        probablity[probablity <= threshold] = 0
+        probablity[probablity > threshold] = 1
 
-        y_predicted = y_predicted.astype(int)
+        y_predicted = probablity.astype(int)
 
         return y_predicted
 
