@@ -47,8 +47,9 @@ class NeuralNetwork:
         return self.w
 
     def bias_init(self):
-        self.b = np.random.randn(1, 1) * np.sqrt(2.0 / self.input.shape[0])
-        return self.b
+        self.b = 0.1
+        self.bw = np.random.randn(1, 1) * np.sqrt(2.0 / self.input.shape[0])
+        return self.bw
 
     def feedforward(self, i):
 
@@ -56,7 +57,7 @@ class NeuralNetwork:
             self.w = self.weight_init()
             self.b = self.bias_init()
 
-        self.z = np.dot(self.w.T, self.input) + self.b
+        self.z = np.dot(self.w.T, self.input) + self.b * self.bw
         self.output = sigmoid(self.z)
 
         self.cost = (-1) * (1/self.m) * (np.sum((self.y * np.log(self.output)) + ((1 - self.y) * (np.log(1 - self.output)))))
@@ -64,16 +65,16 @@ class NeuralNetwork:
 
     def backpropogation(self):
         dw = np.dot((cost_derivative(self.m, self.y, self.output) * sigmoid_derivative(self.z)), self.input.T).T
-        db = cost_derivative(self.m, self.y, self.output) * sigmoid_derivative(self.z)
+        db = np.sum(cost_derivative(self.m, self.y, self.output) * sigmoid_derivative(self.z))
 
         self.w = self.w - self.learning_rate * dw
-        self.b = self.b - self.learning_rate * db
-        return self.w,  self.b
+        self.bw = self.bw - self.learning_rate * db
+        return self.w,  self.bw
 
     def propogation(self, i):
         self.a, self.cost = self.feedforward(i)
-        self.w, self.b = self.backpropogation()
-        return self.a, self.cost, self.w, self.b
+        self.w, self.bw = self.backpropogation()
+        return self.a, self.cost, self.w, self.bw
 
     def fit(self):
 
@@ -109,7 +110,7 @@ class NeuralNetwork:
 
     def predict(self, x, threshold):
 
-        probablity = sigmoid(np.dot(self.w.T, x))
+        probablity = sigmoid(np.dot(self.w.T, x) + self.b * self.bw)
 
         probablity[probablity <= threshold] = 0
         probablity[probablity > threshold] = 1
