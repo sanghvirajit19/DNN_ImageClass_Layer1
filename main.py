@@ -41,14 +41,16 @@ class NeuralNetwork:
         self.epochs = epochs
         self.Loss_list = []
         self.epochs_list = []
+        self.activation_value = []
 
     def weight_init(self):
-        self.w = np.random.randn(self.input.shape[0], 1) * np.sqrt(1.0 / self.input.shape[0])
+        self.w = np.random.randn(self.input.shape[0], 1) * np.sqrt(2.0 / self.input.shape[1])
+
         return self.w
 
     def bias_init(self):
         self.b = 0.1
-        self.bw = np.random.randn(1, 1) * np.sqrt(2.0 / self.input.shape[0])
+        self.bw = np.zeros((1, 1))
         return self.bw
 
     def feedforward(self, i):
@@ -58,6 +60,7 @@ class NeuralNetwork:
             self.b = self.bias_init()
 
         self.z = np.dot(self.w.T, self.input) + self.b * self.bw
+
         self.output = sigmoid(self.z)
 
         self.cost = (-1) * (1/self.m) * (np.sum((self.y * np.log(self.output)) + ((1 - self.y) * (np.log(1 - self.output)))))
@@ -83,11 +86,12 @@ class NeuralNetwork:
             self.a, self.cost, self.w, self.b = self.propogation(i)
 
             print('epochs:' + str(i) + " "
-                  "Loss:" + str(self.cost) + " "
-                  "accuracy: {} %".format(100 - np.mean(np.abs(self.a - self.y)) * 100))
+                  "| Loss:" + str(self.cost) + " "
+                  "| Accuracy: {} %".format(100 - np.mean(np.abs(self.a - self.y)) * 100))
 
             if i % 100 == 0:
 
+                self.activation_value.append(self.a.mean())
                 self.Loss_list.append(self.cost)
                 self.epochs_list.append(i)
 
@@ -103,6 +107,19 @@ class NeuralNetwork:
         fig1 = plt.gcf()
         plt.show()
         fig1.savefig('epochs_vs_Loss.png')
+
+        # Plotting activation
+        activation_value = np.array(self.activation_value)
+        activation_value = activation_value.reshape(-1, 1)
+        x_epochs = np.array(self.epochs_list).reshape(-1, 1)
+
+        plt.plot(x_epochs, activation_value)
+        plt.xlabel('x_epochs')
+        plt.ylabel('activation_value')
+
+        fig2 = plt.gcf()
+        plt.show()
+        fig2.savefig('epochs_vs_activation_value.png')
 
         print("Training accuracy: {} %".format(100 - np.mean(np.abs(self.a - self.y)) * 100))
 
